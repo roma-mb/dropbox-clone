@@ -1,5 +1,8 @@
+import FileManagerService from "../services/FileManagerService.js";
+
 export default class FileManagerController {
     constructor() {
+        this.fileManagerService = new FileManagerService();
         this.btnSendFile = document.getElementById('btn-send-file');
         this.files = document.getElementById('files');
         this.snackBar = document.getElementById('react-snackbar-root');
@@ -19,33 +22,6 @@ export default class FileManagerController {
     }
 
     async sendFiles(files) {
-        let promises = [];
-
-        [...files].forEach(file => {
-            let httpRequest = new XMLHttpRequest();
-
-            let currentPromise = new Promise((resolve, reject) => {
-                httpRequest.open('POST', '/upload');
-                httpRequest.onload = event => {
-                    try {
-                        resolve(JSON.parse(httpRequest.responseText));
-                    } catch(error) {
-                        reject(error);
-                    }
-                };
-
-                httpRequest.onerror = event => {
-                    reject(event);
-                };
-            });
-
-            let formData = new FormData();
-            formData.append('input-file', file);
-            httpRequest.send(formData);
-
-            promises.push(currentPromise);
-        });
-
-        return Promise.all(promises);
+        return this.fileManagerService.uploadFile(files);
     }
 }
