@@ -22,6 +22,10 @@ export default class FileManagerController {
     }
 
     async sendFiles(files) {
-        return this.fileManagerService.uploadFile(files);
+        this.fileManagerService.uploadFile(files).then(data => {
+            console.log(data);
+        }).catch(error => {
+            console.log(error);
+        });
     }
 }

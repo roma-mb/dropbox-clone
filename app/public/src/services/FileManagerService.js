@@ -5,15 +5,10 @@ export default class FileManagerService {
         let promises = [];
 
         [...files].forEach(file => {
-            let currentPromise = new Promise((resolve, reject) => {
-                Fetch.post('/upload', file).then(data => {
-                    console.log(data);
-                    resolve(data.responseText);
-                }).catch(error => {
-                    reject(error);
-                });
-            });
+            let formData = new FormData();
+            formData.append('input-file', file);
 
+            let currentPromise = Fetch.postFormData('/uploads', formData);
             promises.push(currentPromise);
         });
 
