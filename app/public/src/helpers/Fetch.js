@@ -13,22 +13,24 @@ export default class Fetch {
     }
 
     static #request(method = 'GET', url = '', payload = '{}') {
-        let request;
-
         const hasNoContentType = (method === 'GET' || method === 'DELETE');
 
-        request = hasNoContentType
-            ? url
-            : new Request(url, {
-                method,
-                headers: {'Content-Type': 'application/json'},
-                body: payload
-            });
+        if (hasNoContentType) {
+            return fetch(url);
+        }
+
+        let requestConfig = {
+            method,
+            headers: {'Content-Type': 'application/json'},
+            body: payload
+        };
 
         if (payload instanceof FormData) {
-            request.headers.append('Content-Type', 'multipart/form-data');
+            delete(requestConfig.headers);
         }
         
+        let request = new Request(url, requestConfig);
+
         return fetch(request);
     }
 }
