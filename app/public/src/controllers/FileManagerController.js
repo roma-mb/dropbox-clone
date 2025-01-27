@@ -22,7 +22,33 @@ export default class FileManagerController {
     }
 
     async sendFiles(files) {
-       this.fileManagerService.uploadFile(files).then(data => console.log(data));
-        // console.log(response);
+       let responses = await this.fileManagerService.uploadFile(files);
+       const isIterable = typeof responses[Symbol.iterator] === 'function';
+
+       if(isIterable) {
+        responses.forEach(response => this.test(response));
+       }       
+    }
+
+    async test(response) {
+        // const reader = response.body.getReader();
+        // const contentLength = +response.headers.get('Content-Length');
+        // let receivedLength = 0;
+
+        // const {done, value} = await reader.read();
+
+        console.log(response);
+
+        // while(true) {
+        //     const {done, value} = await reader.read();
+
+        //     if(done) {
+        //         break;
+        //     }
+
+        //     receivedLength += value.length;
+
+        //     console.log(`Received ${receivedLength} of ${contentLength}`)
+        // }
     }
 }
