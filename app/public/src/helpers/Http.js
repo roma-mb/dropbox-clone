@@ -7,11 +7,11 @@ export default class Http {
         return Http.#request('POST', url, payload);
     }
 
-    static postFormData(url, payload) {
-        return Http.#request('POST', url, payload);
+    static postFormData(url, payload, uploadProgress = event => {}) {
+        return Http.#request('POST', url, payload, uploadProgress);
     }
 
-    static #request(method = 'GET', url = '', payload = '{}') {
+    static #request(method = 'GET', url = '', payload = '{}', uploadProgress = event => {}) {
         let xmlHttpRequest = new XMLHttpRequest();
 
         let response = new Promise((resolve, reject) => {
@@ -32,6 +32,10 @@ export default class Http {
 
             xmlHttpRequest.onerror = event => {
                 reject(event);
+            }
+
+            xmlHttpRequest.upload.onprogress = event => {
+                uploadProgress(event);
             }
         });
 

@@ -1,3 +1,4 @@
+import Utils from "../helpers/Utils.js";
 import FileManagerService from "../services/FileManagerService.js";
 
 export default class FileManagerController {
@@ -6,6 +7,9 @@ export default class FileManagerController {
         this.btnSendFile = document.getElementById('btn-send-file');
         this.files = document.getElementById('files');
         this.snackBar = document.getElementById('react-snackbar-root');
+        this.progressbar = this.snackBar.querySelector('.mc-progress-bar-fg');
+        this.fileName = this.snackBar.querySelector('.filename');
+        this.timeLeft = this.snackBar.querySelector('.timeleft');
 
         this.#loadEvents();
     }
@@ -17,38 +21,29 @@ export default class FileManagerController {
 
         this.files.addEventListener('change', (event) => {
             this.sendFiles(event.target.files);
-            this.snackBar.style.display = 'block';
+            this.toggleSnackBar();
         });
     }
 
     async sendFiles(files) {
-       let responses = await this.fileManagerService.uploadFile(files);
-       const isIterable = typeof responses[Symbol.iterator] === 'function';
+        let startTime = Date.now();
+        
+        await this.fileManagerService.uploadFile(files, event => {
+            const {percentProgress, timeLeft} = this.fileManagerService.calcProgressBar(event, startTime);
+            const {seconds, minutes, hours} = Utils.getTimeByMiliseconds(timeLeft);
 
-       if(isIterable) {
-        responses.forEach(response => this.test(response));
-       }       
+            this.progressbar.style.width = `${percentProgress}%`;
+            this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
+        });
+
+        this.toggleSnackBar();
     }
 
-    async test(response) {
-        // const reader = response.body.getReader();
-        // const contentLength = +response.headers.get('Content-Length');
-        // let receivedLength = 0;
+    toggleSnackBar() {
+        let snackBarDisplay = this.snackBar.style.display;
 
-        // const {done, value} = await reader.read();
-
-        console.log(response);
-
-        // while(true) {
-        //     const {done, value} = await reader.read();
-
-        //     if(done) {
-        //         break;
-        //     }
-
-        //     receivedLength += value.length;
-
-        //     console.log(`Received ${receivedLength} of ${contentLength}`)
-        // }
+        this.snackBar.style.display = (snackBarDisplay === 'none')
+            ? 'block'
+            : 'none';
     }
 }

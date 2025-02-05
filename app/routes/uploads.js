@@ -16,7 +16,7 @@ router.post('/', (request, response, next) => {
     //     response.json({files});
     // });
 
-    response.json({name: 'Jhon Doe'});
+    response.json({uploaded: true});
 });
 
 module.exports = router;
