@@ -1,12 +1,19 @@
 import Http from "../helpers/Http.js";
+import FileIconsRespository from "../repositories/FileIconsRespository.js";
 
 export default class FileManagerService {
-    uploadFile(files, progressElement = () => {}) {
+    constructor() {
+        this.fileIconsRespository = new FileIconsRespository();
+    }
+
+    uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
         let promises = [];
 
         [...files].forEach(file => {
             let formData = new FormData();
             formData.append('input-file', file);
+
+            fileOutput(file);
 
             let currentPromise = Http.postFormData(
                 '/uploads',
@@ -28,5 +35,14 @@ export default class FileManagerService {
         let timeLeft = parseInt(((100 - percentProgress) * timeSpent) / percentProgress);
 
         return {percentProgress, timeLeft};
+    }
+
+    createTagIcon(file) {
+        const iconType = this.fileIconsRespository.getIconByType(file.type ?? 'default');
+
+        return `<li>
+        ${iconType}
+        <div class="name text-center">${file.name ?? '#.file'}</div>
+        </li>`;
     }
 }

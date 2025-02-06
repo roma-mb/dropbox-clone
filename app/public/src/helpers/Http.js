@@ -34,9 +34,7 @@ export default class Http {
                 reject(event);
             }
 
-            xmlHttpRequest.upload.onprogress = event => {
-                uploadProgress(event);
-            }
+            xmlHttpRequest.upload.onprogress = uploadProgress;
         });
 
         xmlHttpRequest.send(payload);

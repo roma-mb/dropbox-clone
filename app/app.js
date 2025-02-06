@@ -8,8 +8,6 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var uploadsRouter = require('./routes/uploads');
 
-var Utils = require("./public/src/helpers/Utils.js");
-
 var app = express();
 
 // view engine setup
@@ -41,7 +39,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-app.use(Utils);
 
 module.exports = app;

@@ -1,5 +1,5 @@
-import Utils from "../helpers/Utils.js";
 import FileManagerService from "../services/FileManagerService.js";
+import Utils from "../helpers/Utils.js";
 
 export default class FileManagerController {
     constructor() {
@@ -10,6 +10,7 @@ export default class FileManagerController {
         this.progressbar = this.snackBar.querySelector('.mc-progress-bar-fg');
         this.fileName = this.snackBar.querySelector('.filename');
         this.timeLeft = this.snackBar.querySelector('.timeleft');
+        this.listOfFiles = document.getElementById('list-of-files-and-directories');
 
         this.#loadEvents();
     }
@@ -21,29 +22,29 @@ export default class FileManagerController {
 
         this.files.addEventListener('change', (event) => {
             this.sendFiles(event.target.files);
-            this.toggleSnackBar();
+            Utils.displayElement(this.snackBar);
         });
     }
 
     async sendFiles(files) {
         let startTime = Date.now();
-        
-        await this.fileManagerService.uploadFile(files, event => {
+
+        let fileOutput = file => {
+            const tagIcon = this.fileManagerService.createTagIcon(file);
+            this.fileName.textContent += `${file.name} `;
+            this.listOfFiles.innerHTML += tagIcon;
+        };
+
+        let progressElement = event => {
             const {percentProgress, timeLeft} = this.fileManagerService.calcProgressBar(event, startTime);
             const {seconds, minutes, hours} = Utils.getTimeByMiliseconds(timeLeft);
 
             this.progressbar.style.width = `${percentProgress}%`;
             this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
-        });
+        };
 
-        this.toggleSnackBar();
-    }
+        await this.fileManagerService.uploadFiles(files, progressElement, fileOutput);
 
-    toggleSnackBar() {
-        let snackBarDisplay = this.snackBar.style.display;
-
-        this.snackBar.style.display = (snackBarDisplay === 'none')
-            ? 'block'
-            : 'none';
+        Utils.displayElement(this.snackBar);
     }
 }
