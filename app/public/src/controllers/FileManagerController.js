@@ -1,5 +1,6 @@
 import FileManagerService from "../services/FileManagerService.js";
 import Utils from "../helpers/Utils.js";
+import enviroment from '/config/enviroment.js';
 
 export default class FileManagerController {
     constructor() {
@@ -29,18 +30,18 @@ export default class FileManagerController {
     async sendFiles(files) {
         let startTime = Date.now();
 
-        let fileOutput = file => {
-            const tagIcon = this.fileManagerService.createTagIcon(file);
-            this.fileName.textContent += `${file.name} `;
-            this.listOfFiles.innerHTML += tagIcon;
-        };
-
         let progressElement = event => {
             const {percentProgress, timeLeft} = this.fileManagerService.calcProgressBar(event, startTime);
             const {seconds, minutes, hours} = Utils.getTimeByMiliseconds(timeLeft);
 
             this.progressbar.style.width = `${percentProgress}%`;
             this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
+        };
+
+        let fileOutput = file => {
+            const tagIcon = this.fileManagerService.createTagIcon(file);
+            this.fileName.textContent += `${file.name} `;
+            this.listOfFiles.innerHTML += tagIcon;
         };
 
         await this.fileManagerService.uploadFiles(files, progressElement, fileOutput);
