@@ -1,5 +1,6 @@
 import Http from "../helpers/Http.js";
-import FileIconsRespository from "../repositories/FileIconsRespository.js"; 
+import FileIconsRespository from "../repositories/FileIconsRespository.js";
+import FirebaseRepository from "../repositories/FirebaseRepository.js";
 
 export default class FileManagerService {
     constructor() {
