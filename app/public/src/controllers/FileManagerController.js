@@ -1,9 +1,11 @@
 import FileManagerService from "../services/FileManagerService.js";
 import Utils from "../helpers/Utils.js";
-import enviroment from '/config/enviroment.js';
+import enviroment from '/config';
 
 export default class FileManagerController {
     constructor() {
+
+        console.log(enviroment);
         this.fileManagerService = new FileManagerService();
         this.btnSendFile = document.getElementById('btn-send-file');
         this.files = document.getElementById('files');

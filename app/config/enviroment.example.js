@@ -8,5 +8,6 @@ export default {
         messagingSenderId: "",
         appId: "",
         measurementId: ""
-    }
+    },
+    server: ""
 };
