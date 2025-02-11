@@ -5,6 +5,7 @@ import FirebaseRepository from "../repositories/FirebaseRepository.js";
 export default class FileManagerService {
     constructor() {
         this.fileIconsRespository = new FileIconsRespository();
+        this.firebaseRepository = new FirebaseRepository('files');
     }
 
     uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
@@ -45,5 +46,10 @@ export default class FileManagerService {
         ${iconType}
         <div class="name text-center">${file.name ?? '#.file'}</div>
         </li>`;
+    }
+
+    async firebaseSave(document) {
+        const file = document?.files['input-file'][0] ?? {};
+        return await this.firebaseRepository.save(file);
     }
 }

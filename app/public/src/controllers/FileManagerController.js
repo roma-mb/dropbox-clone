@@ -43,8 +43,17 @@ export default class FileManagerController {
             this.listOfFiles.innerHTML += tagIcon;
         };
 
-        await this.fileManagerService.uploadFiles(files, progressElement, fileOutput);
-
+        let uploadedFiles = await this.fileManagerService.uploadFiles(files, progressElement, fileOutput);
+        
         Utils.displayElement(this.snackBar);
+
+        if (!uploadedFiles) {
+            console.error(uploadedFiles);
+            return;
+        }
+        
+        uploadedFiles.forEach(file => {
+            this.fileManagerService.firebaseSave(file);
+        });
     }
 }
