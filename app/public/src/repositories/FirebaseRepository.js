@@ -16,11 +16,11 @@ export default class FirebaseRepository {
         return collection(databse, this.collectionName);
     }
 
-    async save(document) {
-        return await addDoc(this.#setCollection(), document);
+    save(document) {
+        return addDoc(this.#setCollection(), document);
     }
 
-    async documents() {
-        return getDocs(this.collectionName);
+    documents() {
+        return getDocs(this.#setCollection());
     }
 };

@@ -13,6 +13,7 @@ export default class FileManagerController {
         this.listOfFiles = document.getElementById('list-of-files-and-directories');
 
         this.#loadEvents();
+        this.loadFiles();
     }
 
     #loadEvents() {
@@ -37,12 +38,7 @@ export default class FileManagerController {
             this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
         };
 
-        let fileOutput = file => {
-            const tagIcon = this.fileManagerService.createTagIcon(file);
-            this.fileName.textContent += `${file.name} `;
-            this.listOfFiles.innerHTML += tagIcon;
-        };
-
+        let fileOutput = file => this.fileName.textContent += `${file?.name ?? ''} `;
         let uploadedFiles = await this.fileManagerService.uploadFiles(files, progressElement, fileOutput);
         
         Utils.displayElement(this.snackBar);
@@ -52,8 +48,37 @@ export default class FileManagerController {
             return;
         }
         
-        uploadedFiles.forEach(file => {
-            this.fileManagerService.firebaseSave(file);
+        uploadedFiles.forEach(async file => {
+            let documentReference = await this.fileManagerService.firebaseSave(file);
+
+            console.log(documentReference);
+
+            // if(documentReference.id) {
+            //     this.#createTagIcon();
+            // }
         });
+
+        this.fileName.value = '';
+    }
+
+    async loadFiles() {
+        const files = await this.fileManagerService.getFiles();
+        
+        files.forEach(file => {
+            const fileData = file.data();
+
+            this.#createTagIcon(
+                file?.id,
+                fileData?.originalFilename,
+                fileData?.mimetype
+            );
+        });
+    }
+
+    #createTagIcon(id, name = 'default', type = 'default') {
+        let tagIcon = this.fileManagerService.createTagIcon(name, type);
+        tagIcon.dataset.key = id;
+
+        this.listOfFiles.appendChild(tagIcon);
     }
 }

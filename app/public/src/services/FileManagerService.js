@@ -39,17 +39,23 @@ export default class FileManagerService {
         return {percentProgress, timeLeft};
     }
 
-    createTagIcon(file) {
-        const iconType = this.fileIconsRespository.getIconByType(file.type ?? 'default');
+    createTagIcon(name = 'default', type = 'default') {
+        const iconType = this.fileIconsRespository.getIconByType(type);
+        let li = document.createElement('li');
 
-        return `<li>
+        li.innerHTML = `
         ${iconType}
-        <div class="name text-center">${file.name ?? '#.file'}</div>
-        </li>`;
+        <div class="name text-center">${name}</div>`; 
+
+        return li;
     }
 
     async firebaseSave(document) {
         const file = document?.files['input-file'][0] ?? {};
         return await this.firebaseRepository.save(file);
+    }
+
+    async getFiles() {
+        return await this.firebaseRepository.documents();
     }
 }
