@@ -50,9 +50,14 @@ export default class FileManagerService {
         return li;
     }
 
-    async firebaseSave(document) {
+    async save(document) {
         const file = document?.files['input-file'][0] ?? {};
         return await this.firebaseRepository.save(file);
+    }
+
+    async saveOnSnapshot(document, on = () => {}) {
+        const file = document?.files['input-file'][0] ?? {};
+        return this.firebaseRepository.saveOnSnapshot(file, on);
     }
 
     async getFiles() {

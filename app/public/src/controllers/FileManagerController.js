@@ -49,13 +49,15 @@ export default class FileManagerController {
         }
         
         uploadedFiles.forEach(async file => {
-            let documentReference = await this.fileManagerService.firebaseSave(file);
+            this.fileManagerService.saveOnSnapshot(file, onSnapshot => {
+                const fileData = onSnapshot.data();
 
-            console.log(documentReference);
-
-            // if(documentReference.id) {
-            //     this.#createTagIcon();
-            // }
+                this.#createTagIcon(
+                    onSnapshot?.id,
+                    fileData?.originalFilename,
+                    fileData?.mimetype
+                );
+            });
         });
 
         this.fileName.value = '';
@@ -76,6 +78,7 @@ export default class FileManagerController {
     }
 
     #createTagIcon(id, name = 'default', type = 'default') {
+        if (!id) return;
         let tagIcon = this.fileManagerService.createTagIcon(name, type);
         tagIcon.dataset.key = id;
 
