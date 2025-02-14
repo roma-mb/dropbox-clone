@@ -42,12 +42,51 @@ export default class FileManagerService {
     createTagIcon(name = 'default', type = 'default') {
         const iconType = this.fileIconsRespository.getIconByType(type);
         let li = document.createElement('li');
+        li.innerHTML = `${iconType}<div class="name text-center">${name}</div>`;
 
-        li.innerHTML = `
-        ${iconType}
-        <div class="name text-center">${name}</div>`; 
+        this.selectedElementEvent(li, (element, event) => {
+            const parentElement = element.parentElement;
+
+            if(event.ctrlKey) {
+                element.classList.toggle('selected');
+                return;
+            }
+
+            let callback = child => child.classList.remove('selected');
+
+            if(event.shiftKey) {
+                element.classList.add('selected');
+                let itemsToSelect = [];
+                let lastElement = null;
+
+                parentElement.childNodes.forEach((child, key) => {
+                    let hasSelected = child.classList.contains('selected');
+
+                    if(hasSelected) {
+                        lastElement = (element === child);
+                        return;
+                    }
+
+
+                    if((element !== child) && !lastElement) {
+                        child.classList.add('selected');
+                    }
+                });
+
+                return;
+            }   
+
+            parentElement.childNodes.forEach(callback);
+            element.classList.add('selected');
+        });
 
         return li;
+    }
+
+    selectedElementEvent(element, callback = () => {}) {
+        element.addEventListener('click', event => {
+            callback(element, event);
+        });
     }
 
     async save(document) {
