@@ -56,25 +56,29 @@ export default class FileManagerService {
 
             if(event.shiftKey) {
                 element.classList.add('selected');
-                let itemsToSelect = [];
-                let lastElement = null;
+                let firstSelectedElement = null;
+                let lastSelectedElement = null;
 
                 parentElement.childNodes.forEach((child, key) => {
                     let hasSelected = child.classList.contains('selected');
 
-                    if(hasSelected) {
-                        lastElement = (element === child);
+                    if(hasSelected && !firstSelectedElement) {
+                        firstSelectedElement = child;
                         return;
                     }
 
+                    if(element === child) {
+                        lastSelectedElement = child;
+                        return;
+                    }
 
-                    if((element !== child) && !lastElement) {
+                    if(firstSelectedElement && !lastSelectedElement) {
                         child.classList.add('selected');
                     }
                 });
 
                 return;
-            }   
+            }
 
             parentElement.childNodes.forEach(callback);
             element.classList.add('selected');
