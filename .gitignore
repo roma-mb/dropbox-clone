@@ -61,4 +61,6 @@ enviroment.js
 # next.js build output
 .next
 
-/uploads
+/uploads/*
+uploads/*
+!uploads/
