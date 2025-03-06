@@ -3,6 +3,8 @@ import Utils from "../helpers/Utils.js";
 
 export default class FileManagerController {
     constructor() {
+        this.onSelectionChange = new Event('onSelectionChange');
+
         this.fileManagerService = new FileManagerService();
         this.btnSendFile = document.getElementById('btn-send-file');
         this.files = document.getElementById('files');
@@ -24,6 +26,10 @@ export default class FileManagerController {
         this.files.addEventListener('change', (event) => {
             this.sendFiles(event.target.files);
             Utils.displayElement(this.snackBar);
+        });
+
+        this.listOfFiles.addEventListener('onSelectionChange', event => {
+            console.log('here')
         });
     }
 
@@ -81,6 +87,7 @@ export default class FileManagerController {
         if (!id) return;
         let tagIcon = this.fileManagerService.createTagIcon(name, type);
         tagIcon.dataset.key = id;
+        tagIcon.dispatchEvent(this.onSelectionChange);
 
         this.listOfFiles.appendChild(tagIcon);
     }
