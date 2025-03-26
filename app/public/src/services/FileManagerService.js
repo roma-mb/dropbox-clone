@@ -6,6 +6,7 @@ export default class FileManagerService {
     constructor() {
         this.fileIconsRespository = new FileIconsRespository();
         this.firebaseRepository = new FirebaseRepository('files');
+        this.onSelectionChange = new Event("selectionchange");
     }
 
     uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
@@ -39,6 +40,36 @@ export default class FileManagerService {
         return {percentProgress, timeLeft};
     }
 
+    appendElement(
+        id,
+        name = 'default',
+        type = 'default',
+        listOfFiles,
+        btnRename,
+        btnDelete
+    ) {
+        if (!id) return;
+        let tagIcon = this.createTagIcon(name, type);
+        tagIcon.dataset.key = id;
+
+        listOfFiles.appendChild(tagIcon);
+
+        tagIcon.addEventListener('selectionchange', event => {
+            let selectedElements = listOfFiles.querySelectorAll('.selected');
+            let currentElementLenght = selectedElements.length;
+
+            if(currentElementLenght === 1) {
+                btnRename.style.display = 'block';
+                btnDelete.style.display = 'block';
+            }
+
+            if(currentElementLenght > 1) {
+                btnRename.style.display = 'none';
+                btnDelete.style.display = 'block';
+            }
+        });
+    }
+
     createTagIcon(name = 'default', type = 'default') {
         const iconType = this.fileIconsRespository.getIconByType(type);
         let li = document.createElement('li');
@@ -46,7 +77,7 @@ export default class FileManagerService {
 
         this.selectedElementEvent(li, (element, event) => {
             const parentElement = element.parentElement;
-
+            
             if(event.ctrlKey) {
                 element.classList.toggle('selected');
                 return;
@@ -90,6 +121,7 @@ export default class FileManagerService {
     selectedElementEvent(element, callback = () => {}) {
         element.addEventListener('click', event => {
             callback(element, event);
+            element.dispatchEvent(this.onSelectionChange);
         });
     }
 

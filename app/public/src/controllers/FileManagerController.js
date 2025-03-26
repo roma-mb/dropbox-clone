@@ -3,8 +3,6 @@ import Utils from "../helpers/Utils.js";
 
 export default class FileManagerController {
     constructor() {
-        this.onSelectionChange = new Event('onSelectionChange');
-
         this.fileManagerService = new FileManagerService();
         this.btnSendFile = document.getElementById('btn-send-file');
         this.files = document.getElementById('files');
@@ -14,8 +12,11 @@ export default class FileManagerController {
         this.timeLeft = this.snackBar.querySelector('.timeleft');
         this.listOfFiles = document.getElementById('list-of-files-and-directories');
 
-        this.#loadEvents();
+        this.btnRename = document.getElementById('btn-rename');
+        this.btnDelete = document.getElementById('btn-delete');
+
         this.loadFiles();
+        this.#loadEvents();
     }
 
     #loadEvents() {
@@ -26,10 +27,6 @@ export default class FileManagerController {
         this.files.addEventListener('change', (event) => {
             this.sendFiles(event.target.files);
             Utils.displayElement(this.snackBar);
-        });
-
-        this.listOfFiles.addEventListener('onSelectionChange', event => {
-            console.log('here')
         });
     }
 
@@ -58,10 +55,13 @@ export default class FileManagerController {
             this.fileManagerService.saveOnSnapshot(file, onSnapshot => {
                 const fileData = onSnapshot.data();
 
-                this.#createTagIcon(
+                this.fileManagerService.appendElement(
                     onSnapshot?.id,
                     fileData?.originalFilename,
-                    fileData?.mimetype
+                    fileData?.mimetype,
+                    this.listOfFiles,
+                    this.btnRename,
+                    this.btnDelete
                 );
             });
         });
@@ -75,20 +75,14 @@ export default class FileManagerController {
         files.forEach(file => {
             const fileData = file.data();
 
-            this.#createTagIcon(
+            this.fileManagerService.appendElement(
                 file?.id,
                 fileData?.originalFilename,
-                fileData?.mimetype
+                fileData?.mimetype,
+                this.listOfFiles,
+                this.btnRename,
+                this.btnDelete
             );
         });
-    }
-
-    #createTagIcon(id, name = 'default', type = 'default') {
-        if (!id) return;
-        let tagIcon = this.fileManagerService.createTagIcon(name, type);
-        tagIcon.dataset.key = id;
-        tagIcon.dispatchEvent(this.onSelectionChange);
-
-        this.listOfFiles.appendChild(tagIcon);
     }
 }
