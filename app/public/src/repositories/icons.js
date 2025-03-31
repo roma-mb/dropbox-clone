@@ -141,24 +141,24 @@ const video = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-ico
     </svg>`;
 
 const icons = {
-    "default": document,
-    "default": file,
-    "image/apng": image,
-    "image/png": image,
-    "image/avif": image,
-    "image/bmp": image,
-    "image/gif": image,
-    "image/jpeg": image,
-    "image/webp": image,
-    "application/pdf": pdf,
-    "audio/mpeg": music,
-    "audio/ogg": music,
-    "audio/wav": music,
-    "audio/webm": music,
-    "video/x-msvideo": video,
-    "video/mp4": video,
-    "video/mpeg": video,
-    "video/webm": video
-} 
+  default: document,
+  default: file,
+  "image/apng": image,
+  "image/png": image,
+  "image/avif": image,
+  "image/bmp": image,
+  "image/gif": image,
+  "image/jpeg": image,
+  "image/webp": image,
+  "application/pdf": pdf,
+  "audio/mpeg": music,
+  "audio/ogg": music,
+  "audio/wav": music,
+  "audio/webm": music,
+  "video/x-msvideo": video,
+  "video/mp4": video,
+  "video/mpeg": video,
+  "video/webm": video,
+};
 
-export {icons};
+export { icons };

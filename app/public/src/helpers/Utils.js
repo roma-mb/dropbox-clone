@@ -1,39 +1,37 @@
 export default class Utils {
-    static getTimeByMiliseconds(milliseconds) {
-        const timeSeconds = (milliseconds / 1000);
-        const seconds = parseInt(timeSeconds % 60);
-        const minutes = parseInt((timeSeconds / 60) % 60);
-        const hours = parseInt((timeSeconds / 60) / 60);
+  static getTimeByMiliseconds(milliseconds) {
+    const timeSeconds = milliseconds / 1000;
+    const seconds = parseInt(timeSeconds % 60);
+    const minutes = parseInt((timeSeconds / 60) % 60);
+    const hours = parseInt(timeSeconds / 60 / 60);
 
-        return {
-            timeSeconds,
-            seconds,
-            minutes,
-            hours
-        };
+    return {
+      timeSeconds,
+      seconds,
+      minutes,
+      hours,
+    };
+  }
+
+  static formatTimeLeft(hours, minutes, seconds) {
+    if (hours) {
+      return `${hours} hours, ${minutes} minutes and ${seconds} seconds`;
     }
 
-    static formatTimeLeft(hours, minutes, seconds) {
-        if(hours) {
-            return `${hours} hours, ${minutes} minutes and ${seconds} seconds`;
-        }
-
-        if(minutes) {
-            return `${minutes} minutes and ${seconds} seconds`;
-        }
-
-        if(seconds) {
-            return `${seconds} seconds`;
-        }
-
-        return '0';
+    if (minutes) {
+      return `${minutes} minutes and ${seconds} seconds`;
     }
 
-    static displayElement(element) {
-        let elementDisplay = element.style.display;
-
-        element.style.display = (elementDisplay === 'none')
-            ? 'block'
-            : 'none';
+    if (seconds) {
+      return `${seconds} seconds`;
     }
+
+    return "0";
+  }
+
+  static displayElement(element) {
+    let elementDisplay = element.style.display;
+
+    element.style.display = elementDisplay === "none" ? "block" : "none";
+  }
 }
