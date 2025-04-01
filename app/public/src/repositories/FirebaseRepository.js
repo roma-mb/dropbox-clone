@@ -7,6 +7,7 @@ import {
   getDoc,
   doc,
   updateDoc,
+  deleteDoc,
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
@@ -47,5 +48,17 @@ export default class FirebaseRepository {
     let docRef = doc(database, this.collectionName, id);
 
     return updateDoc(docRef, attributes);
+  }
+
+  async deleteDocument(id) {
+    let docRef = doc(database, this.collectionName, id);
+    let documentSnapshot = await getDoc(docRef);
+
+    if (documentSnapshot.exists()) {
+      deleteDoc(docRef);
+      return documentSnapshot.data();
+    }
+
+    return {};
   }
 }

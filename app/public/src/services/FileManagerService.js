@@ -1,6 +1,6 @@
-import Http from "../helpers/Http.js";
-import FileIconsRespository from "../repositories/FileIconsRespository.js";
-import FirebaseRepository from "../repositories/FirebaseRepository.js";
+import Http from '../helpers/Http.js';
+import FileIconsRespository from '../repositories/FileIconsRespository.js';
+import FirebaseRepository from '../repositories/FirebaseRepository.js';
 
 export default class FileManagerService {
   constructor() {
@@ -18,11 +18,23 @@ export default class FileManagerService {
       formData.append("input-file", file);
       fileOutput(file);
 
-      let currentPromise = Http.postFormData("/uploads", formData, (event) =>
+      let currentPromise = Http.postFormData('/files/uploads', formData, (event) =>
         progressElement(event)
       );
 
       promises.push(currentPromise);
+    });
+
+    return Promise.all(promises);
+  }
+
+  deleteFiles(fileIds) {
+    let promises = [];
+
+    fileIds.forEach(async id => {
+      let file = await this.firebaseRepository.deleteDocument(id);
+      const response = Http.delete('/files/delete', JSON.stringify(file));
+      promises.push(response);
     });
 
     return Promise.all(promises);
