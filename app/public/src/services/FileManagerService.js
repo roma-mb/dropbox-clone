@@ -28,7 +28,7 @@ export default class FileManagerService {
     return Promise.all(promises);
   }
 
-  deleteFiles(fileIds) {
+  async deleteFiles(fileIds) {
     let promises = [];
 
     fileIds.forEach(async id => {

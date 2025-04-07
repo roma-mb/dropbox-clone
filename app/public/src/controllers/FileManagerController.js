@@ -46,15 +46,17 @@ export default class FileManagerController {
         .catch((error) => console.error(error));
     });
 
-    this.btnDelete.addEventListener('click', event => {
-      let files = []; 
-      
-      this.listOfFiles.querySelectorAll('.selected').forEach(element => {
-        files.push(element.dataset.key)
+    this.btnDelete.addEventListener("click", async (event) => {
+      let files = [];
+
+      this.listOfFiles.querySelectorAll(".selected").forEach((element) => {
+        files.push(element.dataset.key);
       });
 
-      
-      this.fileManagerService.deleteFiles(files);
+      await this.fileManagerService
+        .deleteFiles(files)
+        .then((data) => location.reload())
+        .catch((error) => console.error(error));
     });
   }
 
@@ -62,7 +64,8 @@ export default class FileManagerController {
     let startTime = Date.now();
 
     let progressElement = (event) => {
-      const { percentProgress, timeLeft } = this.fileManagerService.calcProgressBar(event, startTime);
+      const { percentProgress, timeLeft } =
+        this.fileManagerService.calcProgressBar(event, startTime);
       const { seconds, minutes, hours } = Utils.getTimeByMiliseconds(timeLeft);
 
       this.progressbar.style.width = `${percentProgress}%`;
