@@ -62,6 +62,7 @@ export default class FileManagerService {
 
     tagIcon.dataset.key = id;
     tagIcon.dataset.name = name;
+    tagIcon.dataset.type = type;
 
     listOfFiles.appendChild(tagIcon);
 
@@ -135,6 +136,10 @@ export default class FileManagerService {
     element.addEventListener("click", (event) => {
       callback(element, event);
       element.dispatchEvent(this.onSelectionChange);
+    });
+
+    element.addEventListener('dblclick', event => {
+      console.log(element.dataset);
     });
   }
 

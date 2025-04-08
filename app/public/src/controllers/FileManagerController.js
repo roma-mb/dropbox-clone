@@ -1,36 +1,48 @@
-import FileManagerService from "../services/FileManagerService.js";
-import Utils from "../helpers/Utils.js";
+import FileManagerService from '../services/FileManagerService.js';
+import Utils from '../helpers/Utils.js';
 
 export default class FileManagerController {
   constructor() {
+    this.currentFolder = ['files'];
     this.fileManagerService = new FileManagerService();
-    this.btnSendFile = document.getElementById("btn-send-file");
-    this.files = document.getElementById("files");
-    this.snackBar = document.getElementById("react-snackbar-root");
-    this.progressbar = this.snackBar.querySelector(".mc-progress-bar-fg");
-    this.fileName = this.snackBar.querySelector(".filename");
-    this.timeLeft = this.snackBar.querySelector(".timeleft");
-    this.listOfFiles = document.getElementById("list-of-files-and-directories");
+    this.btnSendFile = document.getElementById('btn-send-file');
+    this.files = document.getElementById('files');
+    this.snackBar = document.getElementById('react-snackbar-root');
+    this.progressbar = this.snackBar.querySelector('.mc-progress-bar-fg');
+    this.fileName = this.snackBar.querySelector('.filename');
+    this.timeLeft = this.snackBar.querySelector('.timeleft');
+    this.listOfFiles = document.getElementById('list-of-files-and-directories');
 
-    this.btnRename = document.getElementById("btn-rename");
-    this.btnDelete = document.getElementById("btn-delete");
+    this.btnNewFolder = document.getElementById('btn-new-folder');
+    this.btnRename = document.getElementById('btn-rename');
+    this.btnDelete = document.getElementById('btn-delete');
 
     this.loadFiles();
     this.#loadEvents();
   }
 
   #loadEvents() {
-    this.btnSendFile.addEventListener("click", (event) => {
+    this.btnSendFile.addEventListener('click', (event) => {
       this.files.click();
     });
 
-    this.files.addEventListener("change", (event) => {
+    this.files.addEventListener('change', (event) => {
       this.sendFiles(event.target.files);
       Utils.displayElement(this.snackBar);
     });
 
-    this.btnRename.addEventListener("click", async (event) => {
-      const element = this.listOfFiles.querySelectorAll(".selected")[0];
+    this.btnNewFolder.addEventListener('click', event => {
+
+      let name = prompt('Enter the folder name.')
+
+      if (name) {
+        
+      }
+
+    });
+
+    this.btnRename.addEventListener('click', async (event) => {
+      const element = this.listOfFiles.querySelectorAll('.selected')[0];
       const id = element?.dataset?.key;
       const name = element?.dataset.name;
 
@@ -38,7 +50,7 @@ export default class FileManagerController {
         return;
       }
 
-      let originalFilename = prompt("Rename the file:", name);
+      let originalFilename = prompt('Rename the file:', name);
 
       await this.fileManagerService
         .updateFile(id, { originalFilename })
@@ -46,10 +58,10 @@ export default class FileManagerController {
         .catch((error) => console.error(error));
     });
 
-    this.btnDelete.addEventListener("click", async (event) => {
+    this.btnDelete.addEventListener('click', async (event) => {
       let files = [];
 
-      this.listOfFiles.querySelectorAll(".selected").forEach((element) => {
+      this.listOfFiles.querySelectorAll('.selected').forEach((element) => {
         files.push(element.dataset.key);
       });
 
@@ -73,7 +85,7 @@ export default class FileManagerController {
     };
 
     let fileOutput = (file) =>
-      (this.fileName.textContent += `${file?.name ?? ""} `);
+      (this.fileName.textContent += `${file?.name ?? ''} `);
     let uploadedFiles = await this.fileManagerService.uploadFiles(
       files,
       progressElement,
@@ -101,7 +113,7 @@ export default class FileManagerController {
       });
     });
 
-    this.fileName.value = "";
+    this.fileName.value = '';
   }
 
   async loadFiles() {
