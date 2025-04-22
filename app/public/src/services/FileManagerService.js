@@ -4,8 +4,9 @@ import FirebaseRepository from '../repositories/FirebaseRepository.js';
 
 export default class FileManagerService {
   constructor() {
+    this.currentFolder = ["files"];
     this.fileIconsRespository = new FileIconsRespository();
-    this.firebaseRepository = new FirebaseRepository("files");
+    this.firebaseRepository = new FirebaseRepository('files');
     this.onSelectionChange = new Event("selectionchange");
   }
 
@@ -58,11 +59,13 @@ export default class FileManagerService {
 
     const name = fileData?.originalFilename;
     const type = fileData?.mimetype;
+    const filepath = fileData?.filepath;
     let tagIcon = this.createTagIcon(name, type);
 
     tagIcon.dataset.key = id;
     tagIcon.dataset.name = name;
     tagIcon.dataset.type = type;
+    tagIcon.dataset.filepath = filepath;
 
     listOfFiles.appendChild(tagIcon);
 
@@ -139,13 +142,28 @@ export default class FileManagerService {
     });
 
     element.addEventListener('dblclick', event => {
-      console.log(element.dataset);
+      let filePath = element.dataset?.filepath;
+
+      if(filePath) {
+        this.currentFolder = filePath.split('/');
+        console.log(this.currentFolder);
+      }
     });
   }
 
-  async save(document) {
-    const file = document?.files["input-file"][0] ?? {};
-    return await this.firebaseRepository.save(file);
+  async createFolder(name) {
+
+    const documentRef = `${this.currentFolder.join('/')}/${name}`;
+
+    const folder = {
+      filepath: documentRef,
+      mimetype: "folder",
+      originalFilename: name,
+    };
+
+
+    return this.firebaseRepository
+      .set(documentRef, folder);
   }
 
   async saveOnSnapshot(document, on = () => {}) {

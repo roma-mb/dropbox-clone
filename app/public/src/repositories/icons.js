@@ -1,13 +1,3 @@
-const document = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
-        <title>content-folder-large</title>
-        <g fill="none" fill-rule="evenodd">
-            <path d="M77.955 53h50.04A3.002 3.002 0 0 1 131 56.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 114.995V45.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z"
-                fill="#71B9F4"></path>
-            <path d="M77.955 52h50.04A3.002 3.002 0 0 1 131 55.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 113.995V44.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z"
-                fill="#92CEFF"></path>
-        </g>
-    </svg>`;
-
 const file = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
         <title>1357054_617b.jpg</title>
         <defs>
@@ -23,6 +13,16 @@ const file = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon
                 <use fill="#F7F9FA" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#mc-content-unknown-large-b"></use>
             </g>
         </g>
+    </svg>`;
+
+const folder = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
+    <title>content-folder-large</title>
+    <g fill="none" fill-rule="evenodd">
+        <path d="M77.955 53h50.04A3.002 3.002 0 0 1 131 56.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 114.995V45.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z"
+            fill="#71B9F4"></path>
+        <path d="M77.955 52h50.04A3.002 3.002 0 0 1 131 55.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 113.995V44.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z"
+            fill="#92CEFF"></path>
+    </g>
     </svg>`;
 
 const image = `<svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -141,8 +141,8 @@ const video = `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-ico
     </svg>`;
 
 const icons = {
-  default: document,
   default: file,
+  folder,
   "image/apng": image,
   "image/png": image,
   "image/avif": image,

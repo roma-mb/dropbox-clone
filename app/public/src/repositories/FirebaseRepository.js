@@ -1,15 +1,22 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
   getFirestore,
   collection,
   addDoc,
   getDocs,
   getDoc,
+  setDoc,
   doc,
   updateDoc,
   deleteDoc,
-  onSnapshot,
-} from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+  onSnapshot
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
 import env from "/config/enviroment.js";
 
@@ -21,23 +28,29 @@ export default class FirebaseRepository {
     this.collectionName = collectionName;
   }
 
-  #setCollection() {
+  getCollection() {
     return collection(database, this.collectionName);
   }
 
-  save(document) {
-    return addDoc(this.#setCollection(), document);
+  async save(document) {
+    return addDoc(this.getCollection(), document);
+  }
+
+  async set(reference, document) {
+    const documentRef = doc(database, reference);
+
+    return setDoc(documentRef, document);
   }
 
   async saveOnSnapshot(document, on = () => {}) {
-    let docRef = await addDoc(this.#setCollection(), document);
+    let docRef = await addDoc(this.getCollection(), document);
     let unsubscribeDoc = onSnapshot(docRef, (docSnapshot) => on(docSnapshot));
 
     return { docRef, unsubscribeDoc };
   }
 
-  documents() {
-    return getDocs(this.#setCollection());
+  async documents() {
+    return getDocs(this.getCollection());
   }
 
   async getDocument(id) {
