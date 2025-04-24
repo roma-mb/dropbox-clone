@@ -43,6 +43,7 @@ export default class FirebaseRepository {
   }
 
   async saveOnSnapshot(document, on = () => {}) {
+    console.log(this.getCollection());
     let docRef = await addDoc(this.getCollection(), document);
     let unsubscribeDoc = onSnapshot(docRef, (docSnapshot) => on(docSnapshot));
 
@@ -51,6 +52,10 @@ export default class FirebaseRepository {
 
   async documents() {
     return getDocs(this.getCollection());
+  }
+
+  async getFilesByFolder(folder) {
+    return getDocs(collection(database, folder));
   }
 
   async getDocument(id) {

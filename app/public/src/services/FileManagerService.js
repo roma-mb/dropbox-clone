@@ -8,6 +8,12 @@ export default class FileManagerService {
     this.fileIconsRespository = new FileIconsRespository();
     this.firebaseRepository = new FirebaseRepository('files');
     this.onSelectionChange = new Event("selectionchange");
+
+    this.listOfFiles = document.getElementById("list-of-files-and-directories");
+
+    this.btnNewFolder = document.getElementById("btn-new-folder");
+    this.btnRename = document.getElementById("btn-rename");
+    this.btnDelete = document.getElementById("btn-delete");
   }
 
   uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
@@ -141,18 +147,37 @@ export default class FileManagerService {
       element.dispatchEvent(this.onSelectionChange);
     });
 
-    element.addEventListener('dblclick', event => {
+    element.addEventListener('dblclick', async event => {
       let filePath = element.dataset?.filepath;
+      let type = element.dataset?.type;
 
-      if(filePath) {
+      if(filePath && type === 'folder') {
         this.currentFolder = filePath.split('/');
-        console.log(this.currentFolder);
+        let lastFolder = this.currentFolder.pop();
+
+        console.log(this.currentFolder, filePath, lastFolder);
+
+
+        const files = await this.getFilesByFolder(filePath + '/' + lastFolder);
+
+        this.listOfFiles.innerHTML = '';
+
+        files.forEach((file) => {
+          const fileData = file.data();
+    
+          this.appendElement(
+            file?.id,
+            fileData,
+            this.listOfFiles,
+            this.btnRename,
+            this.btnDelete
+          );
+        });
       }
     });
   }
 
   async createFolder(name) {
-
     const documentRef = `${this.currentFolder.join('/')}/${name}`;
 
     const folder = {
@@ -161,9 +186,11 @@ export default class FileManagerService {
       originalFilename: name,
     };
 
+    console.log(folder);
 
-    return this.firebaseRepository
-      .set(documentRef, folder);
+
+    // return this.firebaseRepository
+    //   .set(documentRef, folder);
   }
 
   async saveOnSnapshot(document, on = () => {}) {
@@ -173,6 +200,10 @@ export default class FileManagerService {
 
   async getFiles() {
     return await this.firebaseRepository.documents();
+  }
+
+  async getFilesByFolder(folder) {
+    return await this.firebaseRepository.getFilesByFolder(folder);
   }
 
   async updateFile(id, attributes) {
