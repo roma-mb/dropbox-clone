@@ -21,16 +21,16 @@ export default class FileManagerController {
   }
 
   #loadEvents() {
-    this.btnSendFile.addEventListener("click", event => {
+    this.btnSendFile.addEventListener('click', event => {
       this.files.click();
     });
 
-    this.files.addEventListener("change", event => {
+    this.files.addEventListener('change', event => {
       this.sendFiles(event.target.files);
       Utils.displayElement(this.snackBar);
     });
 
-    this.btnNewFolder.addEventListener("click", event => {
+    this.btnNewFolder.addEventListener('click', event => {
       let name = prompt("Enter the folder name.");
 
       if (name) {
@@ -41,7 +41,7 @@ export default class FileManagerController {
       }
     });
 
-    this.btnRename.addEventListener("click", async event => {
+    this.btnRename.addEventListener('click', async event => {
       const element = this.listOfFiles.querySelectorAll(".selected")[0];
       const id = element?.dataset?.key;
       const name = element?.dataset.name;
@@ -50,7 +50,7 @@ export default class FileManagerController {
         return;
       }
 
-      let originalFilename = prompt("Rename the file:", name);
+      let originalFilename = prompt('Rename the file:', name);
 
       await this.fileManagerService
         .updateFile(id, { originalFilename })
@@ -61,7 +61,7 @@ export default class FileManagerController {
     this.btnDelete.addEventListener("click", async event => {
       let files = [];
 
-      this.listOfFiles.querySelectorAll(".selected").forEach((element) => {
+      this.listOfFiles.querySelectorAll('.selected').forEach((element) => {
         files.push(element.dataset.key);
       });
 
@@ -85,7 +85,8 @@ export default class FileManagerController {
     };
 
     let fileOutput = (file) =>
-      (this.fileName.textContent += `${file?.name ?? ""} `);
+      (this.fileName.textContent += `${file?.name ?? ''} `);
+
     let uploadedFiles = await this.fileManagerService.uploadFiles(
       files,
       progressElement,
@@ -100,7 +101,7 @@ export default class FileManagerController {
     }
 
     uploadedFiles.forEach(async (file) => {
-      this.fileManagerService.saveOnSnapshot(file, (onSnapshot) => {
+      this.fileManagerService.saveOnSnapshot(file, onSnapshot => {
         const fileData = onSnapshot.data();
 
         this.fileManagerService.appendElement(
@@ -113,7 +114,7 @@ export default class FileManagerController {
       });
     });
 
-    this.fileName.value = "";
+    this.fileName.value = '';
   }
 
   async loadFiles() {

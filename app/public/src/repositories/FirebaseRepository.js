@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getFirestore,
   collection,
@@ -9,13 +9,13 @@ import {
   doc,
   updateDoc,
   deleteDoc,
-  onSnapshot
-} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+  onSnapshot,
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
 import env from "/config/enviroment.js";
@@ -26,6 +26,12 @@ const database = getFirestore(app);
 export default class FirebaseRepository {
   constructor(collectionName = "default") {
     this.collectionName = collectionName;
+  }
+
+  setCollection(collectionName) {
+    this.collectionName = collectionName;
+
+    return this;
   }
 
   getCollection() {

@@ -1,12 +1,12 @@
-import Http from '../helpers/Http.js';
-import FileIconsRespository from '../repositories/FileIconsRespository.js';
-import FirebaseRepository from '../repositories/FirebaseRepository.js';
+import Http from "../helpers/Http.js";
+import FileIconsRespository from "../repositories/FileIconsRespository.js";
+import FirebaseRepository from "../repositories/FirebaseRepository.js";
 
 export default class FileManagerService {
   constructor() {
     this.currentFolder = ["files"];
     this.fileIconsRespository = new FileIconsRespository();
-    this.firebaseRepository = new FirebaseRepository('files');
+    this.firebaseRepository = new FirebaseRepository("files");
     this.onSelectionChange = new Event("selectionchange");
 
     this.listOfFiles = document.getElementById("list-of-files-and-directories");
@@ -14,6 +14,8 @@ export default class FileManagerService {
     this.btnNewFolder = document.getElementById("btn-new-folder");
     this.btnRename = document.getElementById("btn-rename");
     this.btnDelete = document.getElementById("btn-delete");
+
+    this.nav = document.getElementById("browse-location");
   }
 
   uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
@@ -25,8 +27,10 @@ export default class FileManagerService {
       formData.append("input-file", file);
       fileOutput(file);
 
-      let currentPromise = Http.postFormData('/files/uploads', formData, (event) =>
-        progressElement(event)
+      let currentPromise = Http.postFormData(
+        "/files/uploads",
+        formData,
+        (event) => progressElement(event)
       );
 
       promises.push(currentPromise);
@@ -38,9 +42,9 @@ export default class FileManagerService {
   async deleteFiles(fileIds) {
     let promises = [];
 
-    fileIds.forEach(async id => {
+    fileIds.forEach(async (id) => {
       let file = await this.firebaseRepository.deleteDocument(id);
-      const response = Http.delete('/files/delete', JSON.stringify(file));
+      const response = Http.delete("/files/delete", JSON.stringify(file));
       promises.push(response);
     });
 
@@ -147,24 +151,159 @@ export default class FileManagerService {
       element.dispatchEvent(this.onSelectionChange);
     });
 
-    element.addEventListener('dblclick', async event => {
+    element.addEventListener("dblclick", async (event) => {
       let filePath = element.dataset?.filepath;
       let type = element.dataset?.type;
 
-      if(filePath && type === 'folder') {
-        this.currentFolder = filePath.split('/');
-        let lastFolder = this.currentFolder.pop();
+      if (filePath && type === "folder") {
+        const splitedPath = filePath.split("/");
+        const lastFolder = splitedPath[splitedPath.length - 1] ?? "files";
 
-        console.log(this.currentFolder, filePath, lastFolder);
+        let nav = document.createElement("nav");
+        let breadcrumbs = [...new Set(splitedPath)];
 
+        splitedPath.push(lastFolder);
 
-        const files = await this.getFilesByFolder(filePath + '/' + lastFolder);
+        this.currentFolder = splitedPath;
+        let bradcrumbsCollectionPath = [];
 
-        this.listOfFiles.innerHTML = '';
+        breadcrumbs.forEach((folder, key) => {
+          let capitalizeFolder =
+            folder.charAt(0).toUpperCase() + folder.slice(1);
+
+          if (breadcrumbs.length === key + 1) {
+            console.log("inside");
+            nav.innerHTML += `
+            <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+              ${capitalizeFolder}
+            </span>`;
+
+            return;
+          }
+
+          bradcrumbsCollectionPath.push(folder);
+
+          if (key > 0) {
+            bradcrumbsCollectionPath.push(folder);
+          }
+
+          const homeLink = key === 0 ? "/" : "#";
+
+          nav.innerHTML += `
+            <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+              <a href="${homeLink}" data-path="${bradcrumbsCollectionPath.join(
+            "/"
+          )}" class="breadcrumb-segment">${capitalizeFolder}</a>
+            </span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              class="mc-icon-template-stateless"
+              style="top: 4px; position: relative"
+            >
+              <title>arrow-right</title>
+              <path
+                d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z"
+                fill="#637282"
+                fill-rule="evenodd"
+              ></path>
+            </svg>`;
+        });
+
+        this.nav.innerHTML = nav.innerHTML;
+
+        this.nav.querySelectorAll("a").forEach((segment) => {
+          console.log(segment);
+          segment.addEventListener("click", async (event) => {
+            console.log("clicked");
+            event.preventDefault();
+
+            let nav = document.createElement("nav");
+            const currentPath = event.target.dataset.path;
+            let splitedPath = currentPath.split("/");
+            this.currentFolder = splitedPath;
+
+            console.log(this.currentFolder);
+
+            let breadcrumbs = [...new Set(splitedPath)];
+            let newcurrentPath = [];
+
+            breadcrumbs.forEach((folder, key) => {
+              let capitalizeFolder =
+                folder.charAt(0).toUpperCase() + folder.slice(1);
+
+              if (breadcrumbs.length === key + 1) {
+                nav.innerHTML += `
+                <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+                  ${capitalizeFolder}
+                </span>`;
+
+                return;
+              }
+
+              newcurrentPath.push(folder);
+
+              if (key > 0) {
+                newcurrentPath.push(folder);
+              }
+
+              const homeLink = key === 0 ? "/" : "#";
+
+              nav.innerHTML += `
+                <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+                  <a href="${homeLink}" data-path="${newcurrentPath.join(
+                "/"
+              )}" class="breadcrumb-segment">${capitalizeFolder}</a>
+                </span>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  class="mc-icon-template-stateless"
+                  style="top: 4px; position: relative"
+                >
+                  <title>arrow-right</title>
+                  <path
+                    d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z"
+                    fill="#637282"
+                    fill-rule="evenodd"
+                  ></path>
+                </svg>`;
+            });
+
+            this.nav.innerHTML = nav.innerHTML;
+
+            const collection =
+              breadcrumbs.length === 1
+                ? breadcrumbs[0]
+                : this.currentFolder.join("/");
+
+            const files = await this.getFilesByFolder(collection);
+
+            this.listOfFiles.innerHTML = "";
+
+            files.forEach((file) => {
+              const fileData = file.data();
+
+              this.appendElement(
+                file?.id,
+                fileData,
+                this.listOfFiles,
+                this.btnRename,
+                this.btnDelete
+              );
+            });
+          });
+        });
+
+        const files = await this.getFilesByFolder(filePath + "/" + lastFolder);
+
+        this.listOfFiles.innerHTML = "";
 
         files.forEach((file) => {
           const fileData = file.data();
-    
+
           this.appendElement(
             file?.id,
             fileData,
@@ -178,7 +317,7 @@ export default class FileManagerService {
   }
 
   async createFolder(name) {
-    const documentRef = `${this.currentFolder.join('/')}/${name}`;
+    const documentRef = `${this.currentFolder.join("/")}/${name}`;
 
     const folder = {
       filepath: documentRef,
@@ -186,16 +325,15 @@ export default class FileManagerService {
       originalFilename: name,
     };
 
-    console.log(folder);
-
-
-    // return this.firebaseRepository
-    //   .set(documentRef, folder);
+    return this.firebaseRepository.set(documentRef, folder);
   }
 
   async saveOnSnapshot(document, on = () => {}) {
     const file = document?.files["input-file"][0] ?? {};
-    return this.firebaseRepository.saveOnSnapshot(file, on);
+    const collection = this.currentFolder.join("/");
+    return this.firebaseRepository
+      .setCollection(collection)
+      .saveOnSnapshot(file, on);
   }
 
   async getFiles() {
