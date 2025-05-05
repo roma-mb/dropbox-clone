@@ -1,7 +1,7 @@
-import { templates } from "./templates.js";
+import { templates } from './templates.js';
 
 export default class TemplateRespository {
   get(name) {
-    return templates[name] ?? templates["default"];
+    return templates[name] ?? templates['default'];
   }
 }

@@ -1,37 +1,37 @@
-import Http from "../helpers/Http.js";
-import FileIconsRespository from "../repositories/FileIconsRespository.js";
-import TemplateRespository from "../repositories/TemplateRespository.js";
-import FirebaseRepository from "../repositories/FirebaseRepository.js";
-import Utils from "../helpers/Utils.js";
+import Http from '../helpers/Http.js';
+import FileIconsRespository from '../repositories/FileIconsRespository.js';
+import TemplateRespository from '../repositories/TemplateRespository.js';
+import FirebaseRepository from '../repositories/FirebaseRepository.js';
+import Utils from '../helpers/Utils.js';
 
 export default class FileManagerService {
   constructor() {
-    this.currentFolder = ["files"];
+    this.currentFolder = ['files'];
 
-    this.nav = document.getElementById("browse-location");
-    this.files = document.getElementById("files");
-    this.snackBar = document.getElementById("react-snackbar-root");
-    this.listOfFiles = document.getElementById("list-of-files-and-directories");
-    this.btnSendFile = document.getElementById("btn-send-file");
-    this.btnNewFolder = document.getElementById("btn-new-folder");
-    this.btnRename = document.getElementById("btn-rename");
-    this.btnDelete = document.getElementById("btn-delete");
-    this.progressbar = this.snackBar.querySelector(".mc-progress-bar-fg");
-    this.fileName = this.snackBar.querySelector(".filename");
-    this.timeLeft = this.snackBar.querySelector(".timeleft");
+    this.nav = document.getElementById('browse-location');
+    this.files = document.getElementById('files');
+    this.snackBar = document.getElementById('react-snackbar-root');
+    this.listOfFiles = document.getElementById('list-of-files-and-directories');
+    this.btnSendFile = document.getElementById('btn-send-file');
+    this.btnNewFolder = document.getElementById('btn-new-folder');
+    this.btnRename = document.getElementById('btn-rename');
+    this.btnDelete = document.getElementById('btn-delete');
+    this.progressbar = this.snackBar.querySelector('.mc-progress-bar-fg');
+    this.fileName = this.snackBar.querySelector('.filename');
+    this.timeLeft = this.snackBar.querySelector('.timeleft');
 
     this.fileIconsRespository = new FileIconsRespository();
     this.templateRespository = new TemplateRespository();
-    this.firebaseRepository = new FirebaseRepository("files");
-    this.onSelectionChange = new Event("selectionchange");
+    this.firebaseRepository = new FirebaseRepository('files');
+    this.onSelectionChange = new Event('selectionchange');
   }
 
   loadEvents() {
-    this.addEventBtnSendFile("click");
-    this.addEventFiles("change");
-    this.addEventBtnNewFolder("click");
-    this.addEventBtnRename("click");
-    this.addEventBtnDelete("click");
+    this.addEventBtnSendFile('click');
+    this.addEventFiles('change');
+    this.addEventBtnNewFolder('click');
+    this.addEventBtnRename('click');
+    this.addEventBtnDelete('click');
     this.fileEventsLoad();
   }
 
@@ -45,7 +45,7 @@ export default class FileManagerService {
   async loadFiles() {
     const files = await this.getFiles();
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const fileData = file.data() ?? {};
       this.appendElement(file?.id, fileData);
     });
@@ -54,33 +54,33 @@ export default class FileManagerService {
   }
 
   addEventBtnSendFile(name) {
-    this.btnSendFile.addEventListener(name, (event) => {
+    this.btnSendFile.addEventListener(name, event => {
       this.files.click();
     });
   }
 
   addEventFiles(name) {
-    this.files.addEventListener(name, (event) => {
+    this.files.addEventListener(name, event => {
       this.sendFiles(event.target.files);
       Utils.displayElement(this.snackBar);
     });
   }
 
   addEventBtnNewFolder(name) {
-    this.btnNewFolder.addEventListener(name, (event) => {
-      let name = prompt("Enter the folder name.");
+    this.btnNewFolder.addEventListener(name, event => {
+      let name = prompt('Enter the folder name.');
 
       if (name) {
         this.createFolder(name)
-          .then((data) => console.log(data))
-          .catch((error) => console.error(error));
+          .then(data => console.log(data))
+          .catch(error => console.error(error));
       }
     });
   }
 
   addEventBtnRename(name) {
-    this.btnRename.addEventListener(name, async (event) => {
-      const element = this.listOfFiles.querySelectorAll(".selected")[0];
+    this.btnRename.addEventListener(name, async event => {
+      const element = this.listOfFiles.querySelectorAll('.selected')[0];
       const id = element?.dataset?.key;
       const name = element?.dataset.name;
 
@@ -88,48 +88,48 @@ export default class FileManagerService {
         return;
       }
 
-      let originalFilename = prompt("Rename the file:", name);
+      let originalFilename = prompt('Rename the file:', name);
 
       await this.updateFile(id, { originalFilename })
-        .then((data) => location.reload())
-        .catch((error) => console.error(error));
+        .then(data => location.reload())
+        .catch(error => console.error(error));
     });
   }
 
   addEventBtnDelete(name) {
-    this.btnDelete.addEventListener(name, async (event) => {
+    this.btnDelete.addEventListener(name, async event => {
       let files = [];
 
-      this.listOfFiles.querySelectorAll(".selected").forEach((element) => {
+      this.listOfFiles.querySelectorAll('.selected').forEach(element => {
         files.push(element.dataset.key);
       });
 
       await this.fileManagerService
         .deleteFiles(files)
-        .then((data) => location.reload())
-        .catch((error) => console.error(error));
+        .then(data => location.reload())
+        .catch(error => console.error(error));
     });
   }
 
   addEventOnClickFile() {
-    this.listOfFiles.childNodes.forEach((element) => {
-      element.addEventListener("click", (event) => {
+    this.listOfFiles.childNodes.forEach(element => {
+      element.addEventListener('click', event => {
         const parentElement = element.parentElement;
 
         if (event.ctrlKey) {
-          element.classList.toggle("selected");
+          element.classList.toggle('selected');
           element.dispatchEvent(this.onSelectionChange);
           return;
         }
 
         if (event.shiftKey) {
-          element.classList.add("selected");
+          element.classList.add('selected');
           element.dispatchEvent(this.onSelectionChange);
           let firstSelectedElement = null;
           let lastSelectedElement = null;
 
           parentElement.childNodes.forEach((child, key) => {
-            let hasSelected = child.classList.contains("selected");
+            let hasSelected = child.classList.contains('selected');
 
             if (hasSelected && !firstSelectedElement) {
               firstSelectedElement = child;
@@ -142,7 +142,7 @@ export default class FileManagerService {
             }
 
             if (firstSelectedElement && !lastSelectedElement) {
-              child.classList.add("selected");
+              child.classList.add('selected');
               child.dispatchEvent(this.onSelectionChange);
             }
           });
@@ -150,43 +150,41 @@ export default class FileManagerService {
           return;
         }
 
-        parentElement.childNodes.forEach((child) =>
-          child.classList.remove("selected")
-        );
-        element.classList.toggle("selected");
+        parentElement.childNodes.forEach(child => child.classList.remove('selected'));
+        element.classList.toggle('selected');
         element.dispatchEvent(this.onSelectionChange);
       });
     });
   }
 
   addEventOnSelectionChange() {
-    this.listOfFiles.childNodes.forEach((element) => {
-      element.addEventListener("selectionchange", (event) => {
-        let selectedElements = this.listOfFiles.querySelectorAll(".selected");
+    this.listOfFiles.childNodes.forEach(element => {
+      element.addEventListener('selectionchange', event => {
+        let selectedElements = this.listOfFiles.querySelectorAll('.selected');
         let currentElementLenght = selectedElements.length;
-        this.btnRename.style.display = "none";
-        this.btnDelete.style.display = "none";
+        this.btnRename.style.display = 'none';
+        this.btnDelete.style.display = 'none';
 
         if (currentElementLenght === 1) {
-          this.btnRename.style.display = "block";
-          this.btnDelete.style.display = "block";
+          this.btnRename.style.display = 'block';
+          this.btnDelete.style.display = 'block';
         }
 
         if (currentElementLenght > 1) {
-          this.btnRename.style.display = "none";
-          this.btnDelete.style.display = "block";
+          this.btnRename.style.display = 'none';
+          this.btnDelete.style.display = 'block';
         }
       });
     });
   }
 
   addEventOnDoubleClickFile() {
-    this.listOfFiles.childNodes.forEach((element) => {
-      element.addEventListener("dblclick", async (event) => {
+    this.listOfFiles.childNodes.forEach(element => {
+      element.addEventListener('dblclick', async event => {
         let filePath = element.dataset?.filepath;
         let type = element.dataset?.type;
 
-        if (filePath && type === "folder") {
+        if (filePath && type === 'folder') {
           this.handleFolderOpen(filePath);
         }
       });
@@ -194,9 +192,9 @@ export default class FileManagerService {
   }
 
   async handleFolderOpen(filePath) {
-    let nav = document.createElement("nav");
-    const splitedPath = filePath.split("/");
-    const lastFolder = splitedPath[splitedPath.length - 1] ?? "files";
+    let nav = document.createElement('nav');
+    const splitedPath = filePath.split('/');
+    const lastFolder = splitedPath[splitedPath.length - 1] ?? 'files';
 
     splitedPath.push(lastFolder);
     this.currentFolder = splitedPath;
@@ -222,10 +220,10 @@ export default class FileManagerService {
         folderFilePath.push(folder);
       }
 
-      nav.innerHTML += this.templateRespository.get("navSpan")(
-        "#",
-        folderFilePath.join("/"),
-        capitalizeFolder
+      nav.innerHTML += this.templateRespository.get('navSpan')(
+        '#',
+        folderFilePath.join('/'),
+        capitalizeFolder,
       );
     });
 
@@ -233,9 +231,9 @@ export default class FileManagerService {
 
     const files = await this.getFilesByFolder(`${filePath}/${lastFolder}`);
 
-    this.listOfFiles.innerHTML = "";
+    this.listOfFiles.innerHTML = '';
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const fileData = file?.data() ?? {};
       this.appendElement(file?.id, fileData);
     });
@@ -244,14 +242,14 @@ export default class FileManagerService {
   }
 
   addEventInsideOpenedFolder() {
-    let nav = document.createElement("nav");
+    let nav = document.createElement('nav');
 
-    this.nav.querySelectorAll("a").forEach((segment) => {
-      segment.addEventListener("click", async (event) => {
+    this.nav.querySelectorAll('a').forEach(segment => {
+      segment.addEventListener('click', async event => {
         event.preventDefault();
 
         const currentPath = event.target.dataset.path;
-        let splitedPath = currentPath.split("/");
+        let splitedPath = currentPath.split('/');
 
         this.currentFolder = splitedPath;
 
@@ -259,11 +257,10 @@ export default class FileManagerService {
         let folderFilePath = [];
 
         breadcrumbs.forEach((folder, key) => {
-          let capitalizeFolder =
-            folder.charAt(0).toUpperCase() + folder.slice(1);
+          let capitalizeFolder = folder.charAt(0).toUpperCase() + folder.slice(1);
 
           if (breadcrumbs.length === key + 1) {
-            console.log("inside");
+            console.log('inside');
             nav.innerHTML += `
             <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
               ${capitalizeFolder}
@@ -278,25 +275,22 @@ export default class FileManagerService {
             folderFilePath.push(folder);
           }
 
-          nav.innerHTML += this.templateRespository.get("navSpan")(
-            "#",
-            folderFilePath.join("/"),
-            capitalizeFolder
+          nav.innerHTML += this.templateRespository.get('navSpan')(
+            '#',
+            folderFilePath.join('/'),
+            capitalizeFolder,
           );
         });
 
         this.nav.innerHTML = nav.innerHTML;
 
-        const collection =
-          breadcrumbs.length === 1
-            ? breadcrumbs[0]
-            : this.currentFolder.join("/");
+        const collection = breadcrumbs.length === 1 ? breadcrumbs[0] : this.currentFolder.join('/');
 
         const files = await this.getFilesByFolder(collection);
 
-        this.listOfFiles.innerHTML = "";
+        this.listOfFiles.innerHTML = '';
 
-        files.forEach((file) => {
+        files.forEach(file => {
           const fileData = file?.data() ?? {};
           this.appendElement(file?.id, fileData);
         });
@@ -309,25 +303,17 @@ export default class FileManagerService {
   async sendFiles(files) {
     let startTime = Date.now();
 
-    let progressElement = (event) => {
-      const { percentProgress, timeLeft } = this.calcProgressBar(
-        event,
-        startTime
-      );
+    let progressElement = event => {
+      const { percentProgress, timeLeft } = this.calcProgressBar(event, startTime);
       const { seconds, minutes, hours } = Utils.getTimeByMiliseconds(timeLeft);
 
       this.progressbar.style.width = `${percentProgress}%`;
       this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
     };
 
-    let fileOutput = (file) =>
-      (this.fileName.textContent += `${file?.name ?? ""} `);
+    let fileOutput = file => (this.fileName.textContent += `${file?.name ?? ''} `);
 
-    let uploadedFiles = await this.uploadFiles(
-      files,
-      progressElement,
-      fileOutput
-    );
+    let uploadedFiles = await this.uploadFiles(files, progressElement, fileOutput);
 
     Utils.displayElement(this.snackBar);
 
@@ -336,14 +322,14 @@ export default class FileManagerService {
       return;
     }
 
-    uploadedFiles.forEach(async (file) => {
-      this.saveOnSnapshot(file, (onSnapshot) => {
+    uploadedFiles.forEach(async file => {
+      this.saveOnSnapshot(file, onSnapshot => {
         const fileData = onSnapshot.data() ?? {};
         this.appendElement(onSnapshot?.id, fileData);
       });
     });
 
-    this.fileName.value = "";
+    this.fileName.value = '';
 
     this.fileEventsLoad();
   }
@@ -354,9 +340,7 @@ export default class FileManagerService {
     let total = event.total;
     let percentProgress = parseInt((loaded / total) * 100);
 
-    let timeLeft = parseInt(
-      ((100 - percentProgress) * timeSpent) / percentProgress
-    );
+    let timeLeft = parseInt(((100 - percentProgress) * timeSpent) / percentProgress);
 
     return { percentProgress, timeLeft };
   }
@@ -364,16 +348,14 @@ export default class FileManagerService {
   uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
     let promises = [];
 
-    [...files].forEach((file) => {
+    [...files].forEach(file => {
       let formData = new FormData();
 
-      formData.append("input-file", file);
+      formData.append('input-file', file);
       fileOutput(file);
 
-      let currentPromise = Http.postFormData(
-        "/files/uploads",
-        formData,
-        (event) => progressElement(event)
+      let currentPromise = Http.postFormData('/files/uploads', formData, event =>
+        progressElement(event),
       );
 
       promises.push(currentPromise);
@@ -398,9 +380,9 @@ export default class FileManagerService {
     this.listOfFiles.appendChild(tagIcon);
   }
 
-  createTagIcon(name = "default", type = "default") {
+  createTagIcon(name = 'default', type = 'default') {
     const iconType = this.fileIconsRespository.getIconByType(type);
-    let li = document.createElement("li");
+    let li = document.createElement('li');
     li.innerHTML = `${iconType}<div class="name text-center">${name}</div>`;
 
     return li;
@@ -409,9 +391,9 @@ export default class FileManagerService {
   async deleteFiles(fileIds) {
     let promises = [];
 
-    fileIds.forEach(async (id) => {
+    fileIds.forEach(async id => {
       let file = await this.firebaseRepository.deleteDocument(id);
-      const response = Http.delete("/files/delete", JSON.stringify(file));
+      const response = Http.delete('/files/delete', JSON.stringify(file));
       promises.push(response);
     });
 
@@ -419,11 +401,11 @@ export default class FileManagerService {
   }
 
   async createFolder(name) {
-    const documentRef = `${this.currentFolder.join("/")}/${name}`;
+    const documentRef = `${this.currentFolder.join('/')}/${name}`;
 
     const folder = {
       filepath: documentRef,
-      mimetype: "folder",
+      mimetype: 'folder',
       originalFilename: name,
     };
 
@@ -431,11 +413,9 @@ export default class FileManagerService {
   }
 
   async saveOnSnapshot(document, on = () => {}) {
-    const file = document?.files["input-file"][0] ?? {};
-    const collection = this.currentFolder.join("/");
-    return this.firebaseRepository
-      .setCollection(collection)
-      .saveOnSnapshot(file, on);
+    const file = document?.files['input-file'][0] ?? {};
+    const collection = this.currentFolder.join('/');
+    return this.firebaseRepository.setCollection(collection).saveOnSnapshot(file, on);
   }
 
   async getFiles() {

@@ -1,4 +1,4 @@
-import FileManagerService from "../services/FileManagerService.js";
+import FileManagerService from '../services/FileManagerService.js';
 
 export default class FileManagerController {
   constructor() {

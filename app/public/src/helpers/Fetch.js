@@ -1,18 +1,18 @@
 export default class Fetch {
   static get(url) {
-    return Fetch.#request("GET", url);
+    return Fetch.#request('GET', url);
   }
 
   static post(url, payload) {
-    return Fetch.#request("POST", url, payload);
+    return Fetch.#request('POST', url, payload);
   }
 
   static postFormData(url, payload) {
-    return Fetch.#request("POST", url, payload);
+    return Fetch.#request('POST', url, payload);
   }
 
-  static #request(method = "GET", url = "", payload = "{}") {
-    const hasNoContentType = method === "GET" || method === "DELETE";
+  static #request(method = 'GET', url = '', payload = '{}') {
+    const hasNoContentType = method === 'GET' || method === 'DELETE';
 
     if (hasNoContentType) {
       return fetch(url);
@@ -20,7 +20,7 @@ export default class Fetch {
 
     let requestConfig = {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
       body: payload,
     };
 

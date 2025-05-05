@@ -26,12 +26,12 @@ export default class Utils {
       return `${seconds} seconds`;
     }
 
-    return "0";
+    return '0';
   }
 
   static displayElement(element) {
     let elementDisplay = element.style.display;
 
-    element.style.display = elementDisplay === "none" ? "block" : "none";
+    element.style.display = elementDisplay === 'none' ? 'block' : 'none';
   }
 }

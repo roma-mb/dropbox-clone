@@ -1,12 +1,12 @@
-let express = require("express");
+let express = require('express');
 let router = express.Router();
-let formidable = require("formidable");
+let formidable = require('formidable');
 
-const fs = require("fs");
+const fs = require('fs');
 
-router.post("/uploads", (request, response, next) => {
+router.post('/uploads', (request, response, next) => {
   let incomingForm = new formidable.IncomingForm({
-    uploadDir: "./uploads",
+    uploadDir: './uploads',
     keepExtensions: true,
   });
 
@@ -15,20 +15,20 @@ router.post("/uploads", (request, response, next) => {
   });
 });
 
-router.delete("/delete", (request, response, next) => {
+router.delete('/delete', (request, response, next) => {
   const payload = request.body;
-  const filePath = payload?.filepath ?? "";
+  const filePath = payload?.filepath ?? '';
 
   if (!fs.existsSync(filePath)) {
-    response.status(400).json({ message: "File path not found." });
+    response.status(400).json({ message: 'File path not found.' });
   }
 
-  fs.unlink(filePath, (error) => {
+  fs.unlink(filePath, error => {
     if (error) {
       return response.status(400).json({ error });
     }
 
-    response.json({ message: "File removed." });
+    response.json({ message: 'File removed.' });
   });
 });
 

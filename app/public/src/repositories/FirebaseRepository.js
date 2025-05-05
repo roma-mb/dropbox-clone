@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
   getFirestore,
   collection,
@@ -10,21 +10,21 @@ import {
   updateDoc,
   deleteDoc,
   onSnapshot,
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import {
   getStorage,
   ref,
   uploadBytes,
   getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
 
-import env from "/config/enviroment.js";
+import env from '/config/enviroment.js';
 
 const app = initializeApp(env.firebaseConfig);
 const database = getFirestore(app);
 
 export default class FirebaseRepository {
-  constructor(collectionName = "default") {
+  constructor(collectionName = 'default') {
     this.collectionName = collectionName;
   }
 
@@ -51,7 +51,7 @@ export default class FirebaseRepository {
   async saveOnSnapshot(document, on = () => {}) {
     console.log(this.getCollection());
     let docRef = await addDoc(this.getCollection(), document);
-    let unsubscribeDoc = onSnapshot(docRef, (docSnapshot) => on(docSnapshot));
+    let unsubscribeDoc = onSnapshot(docRef, docSnapshot => on(docSnapshot));
 
     return { docRef, unsubscribeDoc };
   }
