@@ -1,21 +1,364 @@
 import Http from "../helpers/Http.js";
 import FileIconsRespository from "../repositories/FileIconsRespository.js";
+import TemplateRespository from "../repositories/TemplateRespository.js";
 import FirebaseRepository from "../repositories/FirebaseRepository.js";
+import Utils from "../helpers/Utils.js";
 
 export default class FileManagerService {
   constructor() {
     this.currentFolder = ["files"];
-    this.fileIconsRespository = new FileIconsRespository();
-    this.firebaseRepository = new FirebaseRepository("files");
-    this.onSelectionChange = new Event("selectionchange");
 
+    this.nav = document.getElementById("browse-location");
+    this.files = document.getElementById("files");
+    this.snackBar = document.getElementById("react-snackbar-root");
     this.listOfFiles = document.getElementById("list-of-files-and-directories");
-
+    this.btnSendFile = document.getElementById("btn-send-file");
     this.btnNewFolder = document.getElementById("btn-new-folder");
     this.btnRename = document.getElementById("btn-rename");
     this.btnDelete = document.getElementById("btn-delete");
+    this.progressbar = this.snackBar.querySelector(".mc-progress-bar-fg");
+    this.fileName = this.snackBar.querySelector(".filename");
+    this.timeLeft = this.snackBar.querySelector(".timeleft");
 
-    this.nav = document.getElementById("browse-location");
+    this.fileIconsRespository = new FileIconsRespository();
+    this.templateRespository = new TemplateRespository();
+    this.firebaseRepository = new FirebaseRepository("files");
+    this.onSelectionChange = new Event("selectionchange");
+  }
+
+  loadEvents() {
+    this.addEventBtnSendFile("click");
+    this.addEventFiles("change");
+    this.addEventBtnNewFolder("click");
+    this.addEventBtnRename("click");
+    this.addEventBtnDelete("click");
+    this.fileEventsLoad();
+  }
+
+  fileEventsLoad() {
+    this.addEventOnClickFile();
+    this.addEventOnSelectionChange();
+    this.addEventOnDoubleClickFile();
+    this.addEventInsideOpenedFolder();
+  }
+
+  async loadFiles() {
+    const files = await this.getFiles();
+
+    files.forEach((file) => {
+      const fileData = file.data() ?? {};
+      this.appendElement(file?.id, fileData);
+    });
+
+    this.fileEventsLoad();
+  }
+
+  addEventBtnSendFile(name) {
+    this.btnSendFile.addEventListener(name, (event) => {
+      this.files.click();
+    });
+  }
+
+  addEventFiles(name) {
+    this.files.addEventListener(name, (event) => {
+      this.sendFiles(event.target.files);
+      Utils.displayElement(this.snackBar);
+    });
+  }
+
+  addEventBtnNewFolder(name) {
+    this.btnNewFolder.addEventListener(name, (event) => {
+      let name = prompt("Enter the folder name.");
+
+      if (name) {
+        this.createFolder(name)
+          .then((data) => console.log(data))
+          .catch((error) => console.error(error));
+      }
+    });
+  }
+
+  addEventBtnRename(name) {
+    this.btnRename.addEventListener(name, async (event) => {
+      const element = this.listOfFiles.querySelectorAll(".selected")[0];
+      const id = element?.dataset?.key;
+      const name = element?.dataset.name;
+
+      if (!(id && name)) {
+        return;
+      }
+
+      let originalFilename = prompt("Rename the file:", name);
+
+      await this.updateFile(id, { originalFilename })
+        .then((data) => location.reload())
+        .catch((error) => console.error(error));
+    });
+  }
+
+  addEventBtnDelete(name) {
+    this.btnDelete.addEventListener(name, async (event) => {
+      let files = [];
+
+      this.listOfFiles.querySelectorAll(".selected").forEach((element) => {
+        files.push(element.dataset.key);
+      });
+
+      await this.fileManagerService
+        .deleteFiles(files)
+        .then((data) => location.reload())
+        .catch((error) => console.error(error));
+    });
+  }
+
+  addEventOnClickFile() {
+    this.listOfFiles.childNodes.forEach((element) => {
+      element.addEventListener("click", (event) => {
+        const parentElement = element.parentElement;
+
+        if (event.ctrlKey) {
+          element.classList.toggle("selected");
+          element.dispatchEvent(this.onSelectionChange);
+          return;
+        }
+
+        if (event.shiftKey) {
+          element.classList.add("selected");
+          element.dispatchEvent(this.onSelectionChange);
+          let firstSelectedElement = null;
+          let lastSelectedElement = null;
+
+          parentElement.childNodes.forEach((child, key) => {
+            let hasSelected = child.classList.contains("selected");
+
+            if (hasSelected && !firstSelectedElement) {
+              firstSelectedElement = child;
+              return;
+            }
+
+            if (element === child) {
+              lastSelectedElement = child;
+              return;
+            }
+
+            if (firstSelectedElement && !lastSelectedElement) {
+              child.classList.add("selected");
+              child.dispatchEvent(this.onSelectionChange);
+            }
+          });
+
+          return;
+        }
+
+        parentElement.childNodes.forEach((child) =>
+          child.classList.remove("selected")
+        );
+        element.classList.toggle("selected");
+        element.dispatchEvent(this.onSelectionChange);
+      });
+    });
+  }
+
+  addEventOnSelectionChange() {
+    this.listOfFiles.childNodes.forEach((element) => {
+      element.addEventListener("selectionchange", (event) => {
+        let selectedElements = this.listOfFiles.querySelectorAll(".selected");
+        let currentElementLenght = selectedElements.length;
+        this.btnRename.style.display = "none";
+        this.btnDelete.style.display = "none";
+
+        if (currentElementLenght === 1) {
+          this.btnRename.style.display = "block";
+          this.btnDelete.style.display = "block";
+        }
+
+        if (currentElementLenght > 1) {
+          this.btnRename.style.display = "none";
+          this.btnDelete.style.display = "block";
+        }
+      });
+    });
+  }
+
+  addEventOnDoubleClickFile() {
+    this.listOfFiles.childNodes.forEach((element) => {
+      element.addEventListener("dblclick", async (event) => {
+        let filePath = element.dataset?.filepath;
+        let type = element.dataset?.type;
+
+        if (filePath && type === "folder") {
+          this.handleFolderOpen(filePath);
+        }
+      });
+    });
+  }
+
+  async handleFolderOpen(filePath) {
+    let nav = document.createElement("nav");
+    const splitedPath = filePath.split("/");
+    const lastFolder = splitedPath[splitedPath.length - 1] ?? "files";
+
+    splitedPath.push(lastFolder);
+    this.currentFolder = splitedPath;
+
+    let breadcrumbs = [...new Set(splitedPath)];
+    let folderFilePath = [];
+
+    breadcrumbs.forEach((folder, key) => {
+      let capitalizeFolder = folder.charAt(0).toUpperCase() + folder.slice(1);
+
+      if (breadcrumbs.length === key + 1) {
+        nav.innerHTML += `
+        <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+          ${capitalizeFolder}
+        </span>`;
+
+        return;
+      }
+
+      folderFilePath.push(folder);
+
+      if (key > 0) {
+        folderFilePath.push(folder);
+      }
+
+      nav.innerHTML += this.templateRespository.get("navSpan")(
+        "#",
+        folderFilePath.join("/"),
+        capitalizeFolder
+      );
+    });
+
+    this.nav.innerHTML = nav.innerHTML;
+
+    const files = await this.getFilesByFolder(`${filePath}/${lastFolder}`);
+
+    this.listOfFiles.innerHTML = "";
+
+    files.forEach((file) => {
+      const fileData = file?.data() ?? {};
+      this.appendElement(file?.id, fileData);
+    });
+
+    this.fileEventsLoad();
+  }
+
+  addEventInsideOpenedFolder() {
+    let nav = document.createElement("nav");
+
+    this.nav.querySelectorAll("a").forEach((segment) => {
+      segment.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        const currentPath = event.target.dataset.path;
+        let splitedPath = currentPath.split("/");
+
+        this.currentFolder = splitedPath;
+
+        let breadcrumbs = [...new Set(splitedPath)];
+        let folderFilePath = [];
+
+        breadcrumbs.forEach((folder, key) => {
+          let capitalizeFolder =
+            folder.charAt(0).toUpperCase() + folder.slice(1);
+
+          if (breadcrumbs.length === key + 1) {
+            console.log("inside");
+            nav.innerHTML += `
+            <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+              ${capitalizeFolder}
+            </span>`;
+
+            return;
+          }
+
+          folderFilePath.push(folder);
+
+          if (key > 0) {
+            folderFilePath.push(folder);
+          }
+
+          nav.innerHTML += this.templateRespository.get("navSpan")(
+            "#",
+            folderFilePath.join("/"),
+            capitalizeFolder
+          );
+        });
+
+        this.nav.innerHTML = nav.innerHTML;
+
+        const collection =
+          breadcrumbs.length === 1
+            ? breadcrumbs[0]
+            : this.currentFolder.join("/");
+
+        const files = await this.getFilesByFolder(collection);
+
+        this.listOfFiles.innerHTML = "";
+
+        files.forEach((file) => {
+          const fileData = file?.data() ?? {};
+          this.appendElement(file?.id, fileData);
+        });
+
+        this.fileEventsLoad();
+      });
+    });
+  }
+
+  async sendFiles(files) {
+    let startTime = Date.now();
+
+    let progressElement = (event) => {
+      const { percentProgress, timeLeft } = this.calcProgressBar(
+        event,
+        startTime
+      );
+      const { seconds, minutes, hours } = Utils.getTimeByMiliseconds(timeLeft);
+
+      this.progressbar.style.width = `${percentProgress}%`;
+      this.timeLeft.textContent = Utils.formatTimeLeft(hours, minutes, seconds);
+    };
+
+    let fileOutput = (file) =>
+      (this.fileName.textContent += `${file?.name ?? ""} `);
+
+    let uploadedFiles = await this.uploadFiles(
+      files,
+      progressElement,
+      fileOutput
+    );
+
+    Utils.displayElement(this.snackBar);
+
+    if (!uploadedFiles) {
+      console.error(uploadedFiles);
+      return;
+    }
+
+    uploadedFiles.forEach(async (file) => {
+      this.saveOnSnapshot(file, (onSnapshot) => {
+        const fileData = onSnapshot.data() ?? {};
+        this.appendElement(onSnapshot?.id, fileData);
+      });
+    });
+
+    this.fileName.value = "";
+
+    this.fileEventsLoad();
+  }
+
+  calcProgressBar(event, startTime) {
+    let timeSpent = Date.now() - startTime;
+    let loaded = event.loaded;
+    let total = event.total;
+    let percentProgress = parseInt((loaded / total) * 100);
+
+    let timeLeft = parseInt(
+      ((100 - percentProgress) * timeSpent) / percentProgress
+    );
+
+    return { percentProgress, timeLeft };
   }
 
   uploadFiles(files, progressElement = () => {}, fileOutput = () => {}) {
@@ -39,32 +382,7 @@ export default class FileManagerService {
     return Promise.all(promises);
   }
 
-  async deleteFiles(fileIds) {
-    let promises = [];
-
-    fileIds.forEach(async (id) => {
-      let file = await this.firebaseRepository.deleteDocument(id);
-      const response = Http.delete("/files/delete", JSON.stringify(file));
-      promises.push(response);
-    });
-
-    return Promise.all(promises);
-  }
-
-  calcProgressBar(event, startTime) {
-    let timeSpent = Date.now() - startTime;
-    let loaded = event.loaded;
-    let total = event.total;
-    let percentProgress = parseInt((loaded / total) * 100);
-
-    let timeLeft = parseInt(
-      ((100 - percentProgress) * timeSpent) / percentProgress
-    );
-
-    return { percentProgress, timeLeft };
-  }
-
-  appendElement(id, fileData, listOfFiles, btnRename, btnDelete) {
+  appendElement(id, fileData) {
     if (!id) return;
 
     const name = fileData?.originalFilename;
@@ -77,24 +395,7 @@ export default class FileManagerService {
     tagIcon.dataset.type = type;
     tagIcon.dataset.filepath = filepath;
 
-    listOfFiles.appendChild(tagIcon);
-
-    tagIcon.addEventListener("selectionchange", (event) => {
-      let selectedElements = listOfFiles.querySelectorAll(".selected");
-      let currentElementLenght = selectedElements.length;
-      btnRename.style.display = "none";
-      btnDelete.style.display = "none";
-
-      if (currentElementLenght === 1) {
-        btnRename.style.display = "block";
-        btnDelete.style.display = "block";
-      }
-
-      if (currentElementLenght > 1) {
-        btnRename.style.display = "none";
-        btnDelete.style.display = "block";
-      }
-    });
+    this.listOfFiles.appendChild(tagIcon);
   }
 
   createTagIcon(name = "default", type = "default") {
@@ -102,218 +403,19 @@ export default class FileManagerService {
     let li = document.createElement("li");
     li.innerHTML = `${iconType}<div class="name text-center">${name}</div>`;
 
-    this.selectedElementEvent(li, (element, event) => {
-      const parentElement = element.parentElement;
-
-      if (event.ctrlKey) {
-        element.classList.toggle("selected");
-        return;
-      }
-
-      if (event.shiftKey) {
-        element.classList.add("selected");
-        let firstSelectedElement = null;
-        let lastSelectedElement = null;
-
-        parentElement.childNodes.forEach((child, key) => {
-          let hasSelected = child.classList.contains("selected");
-
-          if (hasSelected && !firstSelectedElement) {
-            firstSelectedElement = child;
-            return;
-          }
-
-          if (element === child) {
-            lastSelectedElement = child;
-            return;
-          }
-
-          if (firstSelectedElement && !lastSelectedElement) {
-            child.classList.add("selected");
-          }
-        });
-
-        return;
-      }
-
-      parentElement.childNodes.forEach((child) =>
-        child.classList.remove("selected")
-      );
-      element.classList.toggle("selected");
-    });
-
     return li;
   }
 
-  selectedElementEvent(element, callback = () => {}) {
-    element.addEventListener("click", (event) => {
-      callback(element, event);
-      element.dispatchEvent(this.onSelectionChange);
+  async deleteFiles(fileIds) {
+    let promises = [];
+
+    fileIds.forEach(async (id) => {
+      let file = await this.firebaseRepository.deleteDocument(id);
+      const response = Http.delete("/files/delete", JSON.stringify(file));
+      promises.push(response);
     });
 
-    element.addEventListener("dblclick", async (event) => {
-      let filePath = element.dataset?.filepath;
-      let type = element.dataset?.type;
-
-      if (filePath && type === "folder") {
-        const splitedPath = filePath.split("/");
-        const lastFolder = splitedPath[splitedPath.length - 1] ?? "files";
-
-        let nav = document.createElement("nav");
-        let breadcrumbs = [...new Set(splitedPath)];
-
-        splitedPath.push(lastFolder);
-
-        this.currentFolder = splitedPath;
-        let bradcrumbsCollectionPath = [];
-
-        breadcrumbs.forEach((folder, key) => {
-          let capitalizeFolder =
-            folder.charAt(0).toUpperCase() + folder.slice(1);
-
-          if (breadcrumbs.length === key + 1) {
-            console.log("inside");
-            nav.innerHTML += `
-            <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
-              ${capitalizeFolder}
-            </span>`;
-
-            return;
-          }
-
-          bradcrumbsCollectionPath.push(folder);
-
-          if (key > 0) {
-            bradcrumbsCollectionPath.push(folder);
-          }
-
-          const homeLink = key === 0 ? "/" : "#";
-
-          nav.innerHTML += `
-            <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
-              <a href="${homeLink}" data-path="${bradcrumbsCollectionPath.join(
-            "/"
-          )}" class="breadcrumb-segment">${capitalizeFolder}</a>
-            </span>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              class="mc-icon-template-stateless"
-              style="top: 4px; position: relative"
-            >
-              <title>arrow-right</title>
-              <path
-                d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z"
-                fill="#637282"
-                fill-rule="evenodd"
-              ></path>
-            </svg>`;
-        });
-
-        this.nav.innerHTML = nav.innerHTML;
-
-        this.nav.querySelectorAll("a").forEach((segment) => {
-          console.log(segment);
-          segment.addEventListener("click", async (event) => {
-            console.log("clicked");
-            event.preventDefault();
-
-            let nav = document.createElement("nav");
-            const currentPath = event.target.dataset.path;
-            let splitedPath = currentPath.split("/");
-            this.currentFolder = splitedPath;
-
-            console.log(this.currentFolder);
-
-            let breadcrumbs = [...new Set(splitedPath)];
-            let newcurrentPath = [];
-
-            breadcrumbs.forEach((folder, key) => {
-              let capitalizeFolder =
-                folder.charAt(0).toUpperCase() + folder.slice(1);
-
-              if (breadcrumbs.length === key + 1) {
-                nav.innerHTML += `
-                <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
-                  ${capitalizeFolder}
-                </span>`;
-
-                return;
-              }
-
-              newcurrentPath.push(folder);
-
-              if (key > 0) {
-                newcurrentPath.push(folder);
-              }
-
-              const homeLink = key === 0 ? "/" : "#";
-
-              nav.innerHTML += `
-                <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
-                  <a href="${homeLink}" data-path="${newcurrentPath.join(
-                "/"
-              )}" class="breadcrumb-segment">${capitalizeFolder}</a>
-                </span>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  class="mc-icon-template-stateless"
-                  style="top: 4px; position: relative"
-                >
-                  <title>arrow-right</title>
-                  <path
-                    d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z"
-                    fill="#637282"
-                    fill-rule="evenodd"
-                  ></path>
-                </svg>`;
-            });
-
-            this.nav.innerHTML = nav.innerHTML;
-
-            const collection =
-              breadcrumbs.length === 1
-                ? breadcrumbs[0]
-                : this.currentFolder.join("/");
-
-            const files = await this.getFilesByFolder(collection);
-
-            this.listOfFiles.innerHTML = "";
-
-            files.forEach((file) => {
-              const fileData = file.data();
-
-              this.appendElement(
-                file?.id,
-                fileData,
-                this.listOfFiles,
-                this.btnRename,
-                this.btnDelete
-              );
-            });
-          });
-        });
-
-        const files = await this.getFilesByFolder(filePath + "/" + lastFolder);
-
-        this.listOfFiles.innerHTML = "";
-
-        files.forEach((file) => {
-          const fileData = file.data();
-
-          this.appendElement(
-            file?.id,
-            fileData,
-            this.listOfFiles,
-            this.btnRename,
-            this.btnDelete
-          );
-        });
-      }
-    });
+    return Promise.all(promises);
   }
 
   async createFolder(name) {
