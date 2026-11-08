@@ -4,24 +4,25 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "setup": "npm install && npm run setup:frontend",
+    "setup:frontend": "npm --prefix public install && npm --prefix public run install:bower",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "dotenv": "^16.4.7",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
-    "firebase": "^11.3.0",
-    "formidable": "^3.5.2",
-    "http-errors": "~1.6.3",
-    "morgan": "~1.9.1"
+    "cookie-parser": "~1.4.7",
+    "debug": "~4.4.3",
+    "dotenv": "^18.0.9",
+    "ejs": "~7.0.2",
+    "express": "~5.3.0",
+    "formidable": "^3.5.4",
+    "http-errors": "~2.0.1",
+    "morgan": "~1.12.1"
   },
   "devDependencies": {
-    "eslint": "^9.26.0",
-    "eslint-config-prettier": "^10.1.2",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-node": "^11.1.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.9.10"
   }
 }

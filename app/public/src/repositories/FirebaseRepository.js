@@ -1,4 +1,5 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js';
 import {
   getFirestore,
   collection,
@@ -10,17 +11,20 @@ import {
   updateDoc,
   deleteDoc,
   onSnapshot,
-} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js';
 import {
   getStorage,
   ref,
   uploadBytes,
   getDownloadURL,
-} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
+} from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-storage.js';
 
 import env from '/config/enviroment.js';
 
 const app = initializeApp(env.firebaseConfig);
+
+getAnalytics(app);
+
 const database = getFirestore(app);
 
 export default class FirebaseRepository {

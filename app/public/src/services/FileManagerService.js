@@ -260,7 +260,6 @@ export default class FileManagerService {
           let capitalizeFolder = folder.charAt(0).toUpperCase() + folder.slice(1);
 
           if (breadcrumbs.length === key + 1) {
-            console.log('inside');
             nav.innerHTML += `
             <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
               ${capitalizeFolder}
